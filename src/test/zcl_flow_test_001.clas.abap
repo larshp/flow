@@ -15,6 +15,14 @@ public section.
     importing
       !IV_WHERE type STRING
       !IV_BAR type STRING .
+  class-methods TEST05 .
+  class-methods TEST06
+    importing
+      !IV_WHERE type STRING
+      !IV_BAR type STRING .
+  class-methods TEST07
+    importing
+      !IV_WHERE type STRING .
 protected section.
 private section.
 ENDCLASS.
@@ -65,6 +73,44 @@ CLASS ZCL_FLOW_TEST_001 IMPLEMENTATION.
     DATA(lo_sql) = NEW zcl_flow_test_sql(
       'select * from foobar where ' &&
       iv_where  &&
+      lv_local ).
+
+    lo_sql->execute_query( ).
+
+  ENDMETHOD.
+
+
+  METHOD test05.
+
+    DATA(lv_foo) = 2 + 2.
+
+  ENDMETHOD.
+
+
+  METHOD test06.
+
+    DATA: lv_local TYPE string.
+
+    lv_local = iv_bar.
+
+    DATA(lo_sql) = NEW zcl_flow_test_sql(
+      'select * from foobar where ' &&
+      iv_where  &&
+      lv_local ).
+
+    lo_sql->execute_query( ).
+
+  ENDMETHOD.
+
+
+  METHOD test07.
+
+    DATA: lv_local TYPE string.
+
+    lv_local = iv_where.
+
+    DATA(lo_sql) = NEW zcl_flow_test_sql(
+      'select * from foobar where ' &&
       lv_local ).
 
     lo_sql->execute_query( ).
