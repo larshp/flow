@@ -1,61 +1,37 @@
-CLASS zcl_flow DEFINITION
-  PUBLIC
-  CREATE PUBLIC .
+class ZCL_FLOW definition
+  public
+  create public .
 
-  PUBLIC SECTION.
+public section.
 
-    TYPES:
-      BEGIN OF ty_ref,
-*        name      TYPE string,
-        full_name TYPE string,
-        tag       TYPE scr_tag,
-        mode2     TYPE c LENGTH 1,
-*        grade     TYPE scr_grade,
-      END OF ty_ref .
-    TYPES:
-      ty_refs TYPE STANDARD TABLE OF ty_ref WITH DEFAULT KEY .
-    TYPES:
-      BEGIN OF ty_statement,
-        statement TYPE REF TO cl_abap_statement_info,
-        refs      TYPE ty_refs,
-      END OF ty_statement .
-    TYPES:
-      ty_statements TYPE STANDARD TABLE OF ty_statement WITH DEFAULT KEY .
-    TYPES:
-      BEGIN OF ty_includes,
-        include    TYPE programm,
-        statements TYPE ty_statements,
-      END OF ty_includes .
-    TYPES:
-      ty_result TYPE STANDARD TABLE OF ty_includes WITH DEFAULT KEY .
-    TYPES:
-      ty_uses TYPE STANDARD TABLE OF string WITH DEFAULT KEY .
-
-    METHODS entry
-      IMPORTING
-        !iv_include    TYPE programm
-        !iv_method     TYPE string
-      RETURNING
-        VALUE(rt_uses) TYPE ty_uses .
-    METHODS constructor
-      IMPORTING
-        !iv_class TYPE seoclsname .
-    METHODS get_result
-      RETURNING
-        VALUE(rt_flow) TYPE ty_result .
-protected section.
-
-  data MT_FLOW type TY_RESULT .
-
-  methods FIND_METHOD_USE
+  methods BUILD_OUTPUT
+    returning
+      value(RT_STRING) type STRING_TABLE .
+  methods ENTRY
     importing
-      !IT_STATEMENTS type TY_STATEMENTS
+      !IV_INCLUDE type PROGRAMM
       !IV_METHOD type STRING
     returning
-      value(RV_INDEX) type I
+      value(RT_USES) type ref to ZCL_FLOW_REF_LIST
     raising
       ZCX_FLOW_NOT_FOUND .
-  methods BUILD_RESULT
+  methods CONSTRUCTOR
+    importing
+      !IV_CLASS type SEOCLSNAME .
+  methods GET_INCLUDES
+    returning
+      value(RO_INCLUDES) type ref to ZCL_FLOW_INCLUDE_LIST .
+protected section.
+
+  data MO_INCLUDES type ref to ZCL_FLOW_INCLUDE_LIST .
+
+  methods RUN_COMPILER
+    importing
+      !IV_CLASS type SEOCLSNAME
+    returning
+      value(RT_RESULT) type SCR_REFS .
+  methods FIND_METHOD_USE .
+  methods BUILD_INCLUDE_LIST
     importing
       !IV_CLASS type SEOCLSNAME .
 private section.
@@ -66,44 +42,50 @@ ENDCLASS.
 CLASS ZCL_FLOW IMPLEMENTATION.
 
 
-  METHOD build_result.
+  METHOD build_include_list.
 
-    DATA: lt_result TYPE scr_refs.
+    DATA(lt_result) = run_compiler( iv_class ).
 
-    DATA(lo_compiler) = cl_abap_compiler=>create(
-      p_name             = cl_oo_classname_service=>get_classpool_name( iv_class )
-      p_no_package_check = abap_true ).
-
-    lo_compiler->get_all(
-      IMPORTING
-        p_result = lt_result ).
-
-    DELETE lt_result WHERE tag = cl_abap_compiler=>tag_enhancement_impl.
-    DELETE lt_result WHERE tag = cl_abap_compiler=>tag_include.
-    DELETE lt_result WHERE tag = cl_abap_compiler=>tag_type.
-    DELETE lt_result WHERE tag = cl_abap_compiler=>tag_method AND grade = cl_abap_compiler=>grade_definition.
-    DELETE lt_result WHERE name = ''. " intermediate results
+    CREATE OBJECT mo_includes.
 
     LOOP AT lt_result ASSIGNING FIELD-SYMBOL(<ls_result>).
-      READ TABLE mt_flow ASSIGNING FIELD-SYMBOL(<ls_include>)
-        WITH KEY include = <ls_result>-statement->source_info->name.
-      IF sy-subrc <> 0.
-        APPEND INITIAL LINE TO mt_flow ASSIGNING <ls_include>.
-        <ls_include>-include = <ls_result>-statement->source_info->name.
-      ENDIF.
 
-      READ TABLE <ls_include>-statements ASSIGNING FIELD-SYMBOL(<ls_statement>)
-        WITH KEY statement = <ls_result>-statement.
-      IF sy-subrc <> 0.
-        APPEND INITIAL LINE TO <ls_include>-statements ASSIGNING <ls_statement>.
-        <ls_statement>-statement = <ls_result>-statement.
-      ENDIF.
+      CASE <ls_result>-statement->source_info->name.
+        WHEN cl_oo_classname_service=>get_ccau_name( iv_class )
+            OR cl_oo_classname_service=>get_pubsec_name( iv_class )
+            OR cl_oo_classname_service=>get_prisec_name( iv_class )
+            OR cl_oo_classname_service=>get_prosec_name( iv_class ).
+          CONTINUE.
+      ENDCASE.
 
-      APPEND INITIAL LINE TO <ls_statement>-refs ASSIGNING FIELD-SYMBOL(<ls_ref>).
-      <ls_ref>-full_name = <ls_result>-full_name.
-      <ls_ref>-tag       = <ls_result>-tag.
-      <ls_ref>-mode2     = <ls_result>-mode2.
-*      <ls_ref>-grade     = <ls_result>-grade.
+      DATA(lo_include) = mo_includes->find_or_append( CONV #( <ls_result>-statement->source_info->name ) ).
+
+      DATA(lo_statement) = lo_include->get_statements( )->find_or_append( <ls_result>-statement ).
+
+      lo_statement->get_refs( )->append(
+        NEW zcl_flow_ref(
+          iv_full_name = <ls_result>-full_name
+          iv_tag       = <ls_result>-tag
+          iv_mode2     = <ls_result>-mode2 ) ).
+
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD build_output.
+
+    LOOP AT mo_includes->mt_includes INTO DATA(lo_include).
+      APPEND |Include { lo_include->get_name( ) }| TO rt_string.
+      LOOP AT lo_include->get_statements( )->mt_statements INTO DATA(lo_statement).
+        APPEND |  { lo_statement->get_statement( )->start_line } to {
+          lo_statement->get_statement( )->end_line }| TO rt_string.
+        LOOP AT lo_statement->get_refs( )->mt_refs INTO DATA(lo_ref).
+          APPEND |    { lo_ref->get_full_name( ) WIDTH = 60 } {
+            lo_ref->get_tag( ) } {
+            lo_ref->get_mode2( ) }| TO rt_string.
+        ENDLOOP.
+      ENDLOOP.
     ENDLOOP.
 
   ENDMETHOD.
@@ -111,7 +93,7 @@ CLASS ZCL_FLOW IMPLEMENTATION.
 
   METHOD constructor.
 
-    build_result( iv_class ).
+    build_include_list( iv_class ).
 
   ENDMETHOD.
 
@@ -121,49 +103,13 @@ CLASS ZCL_FLOW IMPLEMENTATION.
 
 * todo, rename this method?
 
-    READ TABLE mt_flow ASSIGNING FIELD-SYMBOL(<ls_flow>) WITH KEY include = iv_include.
-    ASSERT sy-subrc = 0.
+    DATA(lo_include) = mo_includes->find( iv_include ).
 
-    TRY.
-        DATA(lv_index) = find_method_use(
-          it_statements = <ls_flow>-statements
-          iv_method     = iv_method ).
-      CATCH zcx_flow_not_found.
-        RETURN.
-    ENDTRY.
+    DATA(lo_statement) = lo_include->get_statements( )->find_method_use( iv_method ).
 
-    READ TABLE <ls_flow>-statements ASSIGNING FIELD-SYMBOL(<ls_statement>) INDEX lv_index.
-    ASSERT sy-subrc = 0.
-    LOOP AT <ls_statement>-refs ASSIGNING FIELD-SYMBOL(<ls_ref>)
-        WHERE mode2 = cl_abap_compiler=>mode2_read
-        OR mode2 = cl_abap_compiler=>mode2_ref_read.
-      APPEND <ls_ref>-full_name TO rt_uses.
-    ENDLOOP.
-    lv_index = lv_index - 1.
+    rt_uses = lo_statement->list_reads( ).
 
-    DO.
-      IF lv_index = 0.
-        EXIT. " current loop
-      ENDIF.
-
-      READ TABLE <ls_flow>-statements ASSIGNING <ls_statement> INDEX lv_index.
-      ASSERT sy-subrc = 0.
-
-      LOOP AT <ls_statement>-refs ASSIGNING <ls_ref>
-         WHERE mode2 = cl_abap_compiler=>mode2_read
-         OR mode2 = cl_abap_compiler=>mode2_def.
-* make sure one of the variables is used
-        READ TABLE rt_uses WITH KEY table_line = <ls_ref>-full_name TRANSPORTING NO FIELDS.
-        IF sy-subrc <> 0.
-          EXIT.
-        ENDIF.
-
-        BREAK-POINT.
-
-      ENDLOOP.
-
-      lv_index = lv_index - 1.
-    ENDDO.
+* todo
 
   ENDMETHOD.
 
@@ -171,27 +117,45 @@ CLASS ZCL_FLOW IMPLEMENTATION.
   METHOD find_method_use.
 * todo, change mt_flow to be object oriented? then this will be a method in the class
 
-    LOOP AT it_statements ASSIGNING FIELD-SYMBOL(<ls_statement>).
-      rv_index = sy-tabix.
-
-      READ TABLE <ls_statement>-refs WITH KEY
-        tag = cl_abap_compiler=>tag_method
-        full_name = iv_method
-        TRANSPORTING NO FIELDS.
-      IF sy-subrc = 0.
-* todo, assumption: one usage of IV_METHOD per include
-        RETURN.
-      ENDIF.
-    ENDLOOP.
-
-    RAISE EXCEPTION TYPE zcx_flow_not_found.
+*    LOOP AT it_statements ASSIGNING FIELD-SYMBOL(<ls_statement>).
+*      rv_index = sy-tabix.
+*
+*      READ TABLE <ls_statement>-refs WITH KEY
+*        tag = cl_abap_compiler=>tag_method
+*        full_name = iv_method
+*        TRANSPORTING NO FIELDS.
+*      IF sy-subrc = 0.
+** todo, assumption: one usage of IV_METHOD per include
+*        RETURN.
+*      ENDIF.
+*    ENDLOOP.
+*
+*    RAISE EXCEPTION TYPE zcx_flow_not_found.
 
   ENDMETHOD.
 
 
-  METHOD get_result.
+  METHOD get_includes.
+    ro_includes = mo_includes.
+  ENDMETHOD.
 
-    rt_flow = mt_flow.
+
+  METHOD run_compiler.
+
+    DATA(lo_compiler) = cl_abap_compiler=>create(
+      p_name             = cl_oo_classname_service=>get_classpool_name( iv_class )
+      p_no_package_check = abap_true ).
+
+    lo_compiler->get_all(
+      IMPORTING
+        p_result = rt_result ).
+
+    DELETE rt_result WHERE tag = cl_abap_compiler=>tag_enhancement_impl.
+    DELETE rt_result WHERE tag = cl_abap_compiler=>tag_include.
+    DELETE rt_result WHERE tag = cl_abap_compiler=>tag_type.
+    DELETE rt_result WHERE tag = cl_abap_compiler=>tag_method
+      AND grade = cl_abap_compiler=>grade_definition.
+    DELETE rt_result WHERE name = ''. " intermediate results
 
   ENDMETHOD.
 ENDCLASS.

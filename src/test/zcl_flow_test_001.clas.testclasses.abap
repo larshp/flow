@@ -5,7 +5,7 @@ CLASS ltcl_test DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLESS FINAL.
 
     METHODS:
       setup,
-      expect IMPORTING it_uses TYPE zcl_flow=>ty_uses,
+      expect IMPORTING io_uses TYPE REF TO zcl_flow_ref_list,
       test01 FOR TESTING,
       test02 FOR TESTING,
       test03 FOR TESTING,
@@ -24,24 +24,28 @@ CLASS ltcl_test IMPLEMENTATION.
 
   METHOD expect.
     cl_abap_unit_assert=>assert_equals(
-      act = lines( it_uses )
+      act = lines( io_uses->mt_refs )
       exp = 1 ).
 
+    DATA(lo_ref) = io_uses->mt_refs[ 1 ].
+
     cl_abap_unit_assert=>assert_char_cp(
-      act = it_uses[ 1 ]
+      act = lo_ref->get_full_name( )
       exp = '\TY:ZCL_FLOW_TEST_001\ME:TEST*\DA:IV_WHERE' ).
   ENDMETHOD.
 
   METHOD test01.
-*    cl_abap_unit_assert=>assert_initial( mo_flow->run( 'TEST01' ) ).
+    cl_abap_unit_assert=>assert_equals(
+      act = lines( mo_flow->run( 'TEST01' )->mt_refs )
+      exp = 0 ).
   ENDMETHOD.
 
   METHOD test02.
-*    expect( mo_flow->run( 'TEST02' ) ).
+    expect( mo_flow->run( 'TEST02' ) ).
   ENDMETHOD.
 
   METHOD test03.
-    expect( mo_flow->run( 'TEST03' ) ).
+*    expect( mo_flow->run( 'TEST03' ) ).
   ENDMETHOD.
 
   METHOD test04.

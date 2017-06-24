@@ -1,0 +1,18 @@
+
+CLASS ltcl_test DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLESS FINAL.
+
+  PRIVATE SECTION.
+    METHODS: test_build FOR TESTING.
+
+ENDCLASS.       "ltcl_Test
+
+CLASS ltcl_test IMPLEMENTATION.
+
+  METHOD test_build.
+
+    NEW zcl_flow( 'ZCL_FLOW' ).
+* todo, test stuff
+
+  ENDMETHOD.
+
+ENDCLASS.
