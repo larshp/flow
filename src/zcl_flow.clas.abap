@@ -1,4 +1,4 @@
-class ZCL_AOC_FLOW definition
+class ZCL_FLOW definition
   public
   create public .
 
@@ -27,7 +27,15 @@ public section.
       END OF ty_includes .
   types:
     ty_result TYPE STANDARD TABLE OF ty_includes WITH DEFAULT KEY .
+  types:
+    ty_uses TYPE STANDARD TABLE OF string WITH DEFAULT KEY .
 
+  methods ENTRY
+    importing
+      !IV_INCLUDE type PROGRAMM
+      !IV_METHOD type STRING
+    returning
+      value(RT_USES) type TY_USES .
   methods CONSTRUCTOR
     importing
       !IV_CLASS type SEOCLSNAME .
@@ -46,7 +54,7 @@ ENDCLASS.
 
 
 
-CLASS ZCL_AOC_FLOW IMPLEMENTATION.
+CLASS ZCL_FLOW IMPLEMENTATION.
 
 
   METHOD BUILD_RESULT.
@@ -99,6 +107,28 @@ CLASS ZCL_AOC_FLOW IMPLEMENTATION.
   ENDMETHOD.
 
 
-  method GET_RESULT.
-  endmethod.
+  METHOD ENTRY.
+* todo, rename method?
+
+    READ TABLE mt_flow ASSIGNING FIELD-SYMBOL(<ls_flow>) WITH KEY include = iv_include.
+    ASSERT sy-subrc = 0.
+
+    LOOP AT <ls_flow>-statements ASSIGNING FIELD-SYMBOL(<ls_statement>).
+      READ TABLE <ls_statement>-refs WITH KEY
+        tag = cl_abap_compiler=>tag_method
+        full_name = iv_method
+        TRANSPORTING NO FIELDS.
+      IF sy-subrc = 0.
+        BREAK-POINT.
+      ENDIF.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
+  METHOD GET_RESULT.
+
+    rt_flow = mt_flow.
+
+  ENDMETHOD.
 ENDCLASS.
