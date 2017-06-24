@@ -63,7 +63,9 @@ CLASS ZCL_FLOW IMPLEMENTATION.
         NEW zcl_flow_ref(
           iv_full_name = <ls_result>-full_name
           iv_tag       = <ls_result>-tag
-          iv_mode2     = <ls_result>-mode2 ) ).
+          iv_mode2     = <ls_result>-mode2
+          iv_grade     = <ls_result>-grade
+          iv_mode1     = <ls_result>-mode1 ) ).
 
     ENDLOOP.
 
@@ -80,7 +82,9 @@ CLASS ZCL_FLOW IMPLEMENTATION.
         LOOP AT lo_statement->get_refs( )->mt_refs INTO DATA(lo_ref).
           APPEND |    { lo_ref->get_full_name( ) WIDTH = 60 } {
             lo_ref->get_tag( ) } {
-            lo_ref->get_mode2( ) }| TO rt_string.
+            lo_ref->get_mode1( ) } {
+            lo_ref->get_mode2( ) } {
+            lo_ref->get_grade( ) }| TO rt_string.
         ENDLOOP.
       ENDLOOP.
     ENDLOOP.
