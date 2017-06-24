@@ -20,16 +20,22 @@ public section.
     importing
       !IV_WHERE type STRING
       !IV_BAR type STRING .
-  class-methods TEST09
-    importing
-      !IV_WHERE type STRING
-      !IV_BAR type STRING .
   class-methods TEST07
     importing
       !IV_WHERE type STRING .
   class-methods TEST08
     importing
       value(IV_WHERE) type STRING .
+  class-methods TEST09
+    importing
+      !IV_WHERE type STRING
+      !IV_BAR type STRING .
+  class-methods TEST10
+    importing
+      !IT_WHERE type STRING_TABLE .
+  class-methods TEST11
+    importing
+      !IV_WHERE type STRING .
 protected section.
 private section.
 ENDCLASS.
@@ -132,6 +138,26 @@ CLASS ZCL_FLOW_TEST_001 IMPLEMENTATION.
       'select * from foobar where ' &&
       iv_where  &&
       lv_local ).
+
+  ENDMETHOD.
+
+
+  METHOD test10.
+
+    DATA(lo_sql) = NEW zcl_flow_test_sql(
+      'select * from foobar where ' &&
+      it_where[ 1 ] ).
+
+  ENDMETHOD.
+
+
+  METHOD test11.
+
+    DATA(lv_foo) = cl_oo_classname_service=>get_prosec_name( CONV #( iv_where ) ).
+
+    DATA(lo_sql) = NEW zcl_flow_test_sql(
+      'select * from foobar where ' &&
+      lv_foo ).
 
   ENDMETHOD.
 ENDCLASS.

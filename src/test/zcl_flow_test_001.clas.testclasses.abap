@@ -16,7 +16,9 @@ CLASS ltcl_test DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLESS FINAL.
       test06 FOR TESTING RAISING zcx_flow,
       test07 FOR TESTING RAISING zcx_flow,
       test08 FOR TESTING RAISING zcx_flow,
-      test09 FOR TESTING RAISING zcx_flow.
+      test09 FOR TESTING RAISING zcx_flow,
+      test10 FOR TESTING RAISING zcx_flow,
+      test11 FOR TESTING RAISING zcx_flow.
 
 ENDCLASS.       "ltcl_Test
 
@@ -52,12 +54,12 @@ CLASS ltcl_test IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD test01.
-*    assert( mo_flow->run( 'TEST01' ) ).
+    assert( mo_flow->run( 'TEST01' ) ).
   ENDMETHOD.
 
   METHOD test02.
     add_expected( 'IV_WHERE' ).
-*    assert( mo_flow->run( 'TEST02' ) ).
+    assert( mo_flow->run( 'TEST02' ) ).
   ENDMETHOD.
 
   METHOD test03.
@@ -67,32 +69,43 @@ CLASS ltcl_test IMPLEMENTATION.
 
   METHOD test04.
     add_expected( 'IV_WHERE' ).
-*    assert( mo_flow->run( 'TEST04' ) ).
+    assert( mo_flow->run( 'TEST04' ) ).
   ENDMETHOD.
 
   METHOD test05.
-*    assert( mo_flow->run( 'TEST05' ) ).
+    assert( mo_flow->run( 'TEST05' ) ).
   ENDMETHOD.
 
   METHOD test06.
     add_expected( 'IV_WHERE' ).
     add_expected( 'IV_BAR' ).
-* assert( mo_flow->run( 'TEST06' ) ).
+    assert( mo_flow->run( 'TEST06' ) ).
   ENDMETHOD.
 
   METHOD test07.
-*    assert( mo_flow->run( 'TEST07' ) ).
+    add_expected( 'IV_WHERE' ).
+    assert( mo_flow->run( 'TEST07' ) ).
   ENDMETHOD.
 
   METHOD test08.
     add_expected( 'IV_WHERE' ).
-* assert( mo_flow->run( 'TEST08' ) ).
+    assert( mo_flow->run( 'TEST08' ) ).
   ENDMETHOD.
 
   METHOD test09.
     add_expected( 'IV_WHERE' ).
     add_expected( 'IV_BAR' ).
-* assert( mo_flow->run( 'TEST09' ) ).
+    assert( mo_flow->run( 'TEST09' ) ).
+  ENDMETHOD.
+
+  METHOD test10.
+    add_expected( 'IT_WHERE' ).
+    assert( mo_flow->run( 'TEST10' ) ).
+  ENDMETHOD.
+
+  METHOD test11.
+    add_expected( 'IV_WHERE' ).
+    assert( mo_flow->run( 'TEST11' ) ).
   ENDMETHOD.
 
 ENDCLASS.

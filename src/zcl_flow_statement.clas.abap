@@ -53,6 +53,7 @@ CLASS ZCL_FLOW_STATEMENT IMPLEMENTATION.
   METHOD constructor.
 
     mo_statement = io_statement.
+    mo_previous  = io_previous.
 
     CREATE OBJECT mo_refs.
 
@@ -68,7 +69,17 @@ CLASS ZCL_FLOW_STATEMENT IMPLEMENTATION.
 
   METHOD contains_write_to.
 
-    BREAK-POINT.
+    LOOP AT get_refs( )->mt_refs INTO DATA(lo_ref).
+      CASE lo_ref->get_mode2( ).
+        WHEN cl_abap_compiler=>mode2_write
+            OR cl_abap_compiler=>mode2_def_write
+            OR cl_abap_compiler=>mode2_read_write.
+          IF io_names->contains( lo_ref->get_full_name( ) ).
+            rv_contains = abap_true.
+            RETURN.
+          ENDIF.
+      ENDCASE.
+    ENDLOOP.
 
   ENDMETHOD.
 
@@ -99,11 +110,13 @@ CLASS ZCL_FLOW_STATEMENT IMPLEMENTATION.
     CREATE OBJECT ro_reads.
 
     LOOP AT get_refs( )->mt_refs INTO DATA(lo_ref).
-      CASE lo_ref->get_mode2( ).
-        WHEN cl_abap_compiler=>mode2_read
-            OR cl_abap_compiler=>mode2_ref_read.
-          ro_reads->append( lo_ref->get_full_name( ) ).
-      ENDCASE.
+      IF lo_ref->get_tag( ) = cl_abap_compiler=>tag_data.
+        CASE lo_ref->get_mode2( ).
+          WHEN cl_abap_compiler=>mode2_read
+              OR cl_abap_compiler=>mode2_ref_read.
+            ro_reads->append( lo_ref->get_full_name( ) ).
+        ENDCASE.
+      ENDIF.
     ENDLOOP.
 
   ENDMETHOD.
@@ -114,9 +127,11 @@ CLASS ZCL_FLOW_STATEMENT IMPLEMENTATION.
     ro_list = io_list->clone( ).
 
     LOOP AT get_refs( )->mt_refs INTO DATA(lo_ref).
-      IF lo_ref->get_mode2( ) = cl_abap_compiler=>mode2_def.
-        ro_list->remove( lo_ref->get_full_name( ) ).
-      ENDIF.
+      CASE lo_ref->get_mode2( ) .
+        WHEN cl_abap_compiler=>mode2_def
+            OR cl_abap_compiler=>mode2_def_write.
+          ro_list->remove( lo_ref->get_full_name( ) ).
+      ENDCASE.
     ENDLOOP.
 
   ENDMETHOD.

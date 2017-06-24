@@ -43,7 +43,5 @@ CLASS ZCL_FLOW_TEST_002 IMPLEMENTATION.
       iv_where  &&
       lv_local ).
 
-    lo_sql->execute_query( ).
-
   ENDMETHOD.
 ENDCLASS.

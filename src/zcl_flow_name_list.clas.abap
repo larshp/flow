@@ -15,6 +15,14 @@ public section.
   methods REMOVE
     importing
       !IV_NAME type STRING .
+  methods APPEND_LIST
+    importing
+      !IO_LIST type ref to ZCL_FLOW_NAME_LIST .
+  methods CONTAINS
+    importing
+      !IV_NAME type STRING
+    returning
+      value(RV_CONTAINS) type ABAP_BOOL .
 protected section.
 private section.
 ENDCLASS.
@@ -31,10 +39,28 @@ CLASS ZCL_FLOW_NAME_LIST IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD append_list.
+
+    APPEND LINES OF io_list->mt_names TO mt_names.
+
+    SORT mt_names ASCENDING.
+    DELETE ADJACENT DUPLICATES FROM mt_names.
+
+  ENDMETHOD.
+
+
   METHOD clone.
 
     CREATE OBJECT ro_list.
     ro_list->mt_names = mt_names.
+
+  ENDMETHOD.
+
+
+  METHOD contains.
+
+    READ TABLE mt_names WITH KEY table_line = iv_name TRANSPORTING NO FIELDS.
+    rv_contains = boolc( sy-subrc = 0 ).
 
   ENDMETHOD.
 

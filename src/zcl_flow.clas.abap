@@ -14,7 +14,7 @@ public section.
     returning
       value(RO_USES) type ref to ZCL_FLOW_NAME_LIST
     raising
-      ZCX_FLOW_NOT_FOUND .
+      ZCX_FLOW .
   methods CONSTRUCTOR
     importing
       !IV_CLASS type SEOCLSNAME .
@@ -119,9 +119,14 @@ CLASS ZCL_FLOW IMPLEMENTATION.
   METHOD foobar.
 * find uses/inputs used for calling IV_METHOD
 
-    DATA(lo_statement) = mo_includes->find( iv_include
-      )->get_statements(
-      )->find_method_use( iv_method ).
+    TRY.
+        DATA(lo_statement) = mo_includes->find( iv_include
+          )->get_statements(
+          )->find_method_use( iv_method ).
+      CATCH zcx_flow_not_found.
+        CREATE OBJECT ro_uses.
+        RETURN.
+    ENDTRY.
 
     ro_uses = lo_statement->list_reads( ).
 
@@ -132,13 +137,12 @@ CLASS ZCL_FLOW IMPLEMENTATION.
       ENDIF.
 
       IF lo_statement->contains_write_to( ro_uses ).
-* todo, append reads to rt_uses
+        ro_uses->append_list( lo_statement->list_reads( ) ).
       ENDIF.
 
       ro_uses = lo_statement->remove_if_definition( ro_uses ).
 
 * todo
-
     ENDDO.
 
   ENDMETHOD.
