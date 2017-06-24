@@ -30,7 +30,7 @@ CLASS ZCL_FLOW_STATEMENT_LIST IMPLEMENTATION.
 
   METHOD find_method_use.
 
-* todo, add possibility to return list of statements
+* todo: add possibility to return list of statements
 
     LOOP AT mt_statements INTO ro_statement.
       IF ro_statement->get_refs( )->is_referenced(
@@ -53,9 +53,13 @@ CLASS ZCL_FLOW_STATEMENT_LIST IMPLEMENTATION.
       ENDIF.
     ENDLOOP.
 
+    READ TABLE mt_statements INDEX lines( mt_statements )
+      INTO DATA(lo_previous).                             "#EC CI_SUBRC
+
     CREATE OBJECT ro_statement
       EXPORTING
-        io_statement = io_statement.
+        io_statement = io_statement
+        io_previous  = lo_previous.
 
     APPEND ro_statement TO mt_statements.
 

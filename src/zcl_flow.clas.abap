@@ -7,20 +7,17 @@ public section.
   methods BUILD_OUTPUT
     returning
       value(RT_STRING) type STRING_TABLE .
-  methods ENTRY
+  methods FOOBAR
     importing
       !IV_INCLUDE type PROGRAMM
       !IV_METHOD type STRING
     returning
-      value(RT_USES) type ref to ZCL_FLOW_REF_LIST
+      value(RO_USES) type ref to ZCL_FLOW_NAME_LIST
     raising
       ZCX_FLOW_NOT_FOUND .
   methods CONSTRUCTOR
     importing
       !IV_CLASS type SEOCLSNAME .
-  methods GET_INCLUDES
-    returning
-      value(RO_INCLUDES) type ref to ZCL_FLOW_INCLUDE_LIST .
 protected section.
 
   data MO_INCLUDES type ref to ZCL_FLOW_INCLUDE_LIST .
@@ -98,22 +95,6 @@ CLASS ZCL_FLOW IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD entry.
-* find uses/inputs used for calling IV_METHOD
-
-* todo, rename this method?
-
-    DATA(lo_include) = mo_includes->find( iv_include ).
-
-    DATA(lo_statement) = lo_include->get_statements( )->find_method_use( iv_method ).
-
-    rt_uses = lo_statement->list_reads( ).
-
-* todo
-
-  ENDMETHOD.
-
-
   METHOD find_method_use.
 * todo, change mt_flow to be object oriented? then this will be a method in the class
 
@@ -135,8 +116,31 @@ CLASS ZCL_FLOW IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD get_includes.
-    ro_includes = mo_includes.
+  METHOD foobar.
+* find uses/inputs used for calling IV_METHOD
+
+    DATA(lo_statement) = mo_includes->find( iv_include
+      )->get_statements(
+      )->find_method_use( iv_method ).
+
+    ro_uses = lo_statement->list_reads( ).
+
+    DO.
+      lo_statement = lo_statement->get_previous( ).
+      IF lo_statement IS INITIAL.
+        EXIT. " current loop.
+      ENDIF.
+
+      IF lo_statement->contains_write_to( ro_uses ).
+* todo, append reads to rt_uses
+      ENDIF.
+
+      ro_uses = lo_statement->remove_if_definition( ro_uses ).
+
+* todo
+
+    ENDDO.
+
   ENDMETHOD.
 
 

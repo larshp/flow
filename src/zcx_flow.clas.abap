@@ -1,9 +1,13 @@
-class ZCX_FLOW_NOT_FOUND definition
+class ZCX_FLOW definition
   public
-  inheriting from ZCX_FLOW
+  inheriting from CX_STATIC_CHECK
+  abstract
   create public .
 
 public section.
+
+  interfaces IF_T100_DYN_MSG .
+  interfaces IF_T100_MESSAGE .
 
   methods CONSTRUCTOR
     importing
@@ -15,7 +19,7 @@ ENDCLASS.
 
 
 
-CLASS ZCX_FLOW_NOT_FOUND IMPLEMENTATION.
+CLASS ZCX_FLOW IMPLEMENTATION.
 
 
   method CONSTRUCTOR.

@@ -1,18 +1,20 @@
-CLASS zcl_flow_test DEFINITION
-  PUBLIC
-  CREATE PUBLIC
-  FOR TESTING .
+class ZCL_FLOW_TEST definition
+  public
+  create public
+  for testing .
 
-  PUBLIC SECTION.
+public section.
 
-    METHODS run
-      IMPORTING
-        !iv_method     TYPE seocpdname
-      RETURNING
-        VALUE(ro_uses) TYPE REF TO zcl_flow_ref_list .
-    METHODS constructor
-      IMPORTING
-        !iv_class TYPE seoclsname .
+  methods RUN
+    importing
+      !IV_METHOD type SEOCPDNAME
+    returning
+      value(RO_USES) type ref to ZCL_FLOW_NAME_LIST
+    raising
+      ZCX_FLOW_NOT_FOUND .
+  methods CONSTRUCTOR
+    importing
+      !IV_CLASS type SEOCLSNAME .
 protected section.
 PRIVATE SECTION.
 
@@ -39,7 +41,7 @@ CLASS ZCL_FLOW_TEST IMPLEMENTATION.
       clsname = mv_class
       cpdname = iv_method ) ).
 
-    ro_uses = mo_flow->entry(
+    ro_uses = mo_flow->foobar(
       iv_include = lv_include
       iv_method  = '\TY:ZCL_FLOW_TEST_SQL' ).
 
