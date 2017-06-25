@@ -4,15 +4,20 @@ class ZCL_FLOW_TEST_002 definition
 
 public section.
 
-  class-methods BAR
+  methods TEST01
     importing
-      !IV_WHERE type STRING .
-  class-methods FOO
-    importing
-      !IV_WHERE type STRING
-      !IV_BAR type STRING .
+      !IV_FILTER type STRING .
 protected section.
 private section.
+
+  methods BUILD_SQL
+    importing
+      !IV_FILTER type STRING
+    returning
+      value(RV_SQL) type STRING .
+  methods EXECUTE_SQL
+    importing
+      !IV_SQL type STRING .
 ENDCLASS.
 
 
@@ -20,28 +25,25 @@ ENDCLASS.
 CLASS ZCL_FLOW_TEST_002 IMPLEMENTATION.
 
 
-  METHOD BAR.
+  METHOD build_sql.
 
-    DATA: lv_foo TYPE string.
-
-    lv_foo = 'sdf'.
-
-    foo( iv_where = iv_where
-         iv_bar   = lv_foo ).
+    rv_sql = iv_filter.
 
   ENDMETHOD.
 
 
-  METHOD foo.
+  METHOD execute_sql.
 
-    DATA: lv_local TYPE string.
+    NEW zcl_flow_test_sql( iv_sql ).
 
-    WRITE iv_bar.
+  ENDMETHOD.
 
-    DATA(lo_sql) = NEW zcl_flow_test_sql(
-      'select * from usr02 where ' &&
-      iv_where  &&
-      lv_local ).
+
+  METHOD test01.
+
+    DATA(lv_sql) = build_sql( iv_filter ).
+
+    execute_sql( lv_sql ).
 
   ENDMETHOD.
 ENDCLASS.
