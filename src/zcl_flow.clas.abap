@@ -7,7 +7,7 @@ public section.
   types:
     BEGIN OF ty_method_result,
         output TYPE string,
-        input  TYPE string_table,
+        input  TYPE ref to zcl_flow_name_list,
       END OF ty_method_result .
   types:
     ty_method_result_tt TYPE STANDARD TABLE OF ty_method_result WITH DEFAULT KEY .
@@ -36,6 +36,11 @@ protected section.
 
   data MO_INCLUDES type ref to ZCL_FLOW_INCLUDE_LIST .
 
+  methods FIND_METHOD_OUTPUT
+    importing
+      !IV_INCLUDE type PROGRAMM
+    returning
+      value(RT_RESULT) type TY_METHOD_RESULT_TT .
   methods BUILD_INCLUDE_LIST
     importing
       !IV_CLASS type SEOCLSNAME .
@@ -75,12 +80,13 @@ CLASS ZCL_FLOW IMPLEMENTATION.
     ro_uses = lo_statement->list_reads( ).
 
     DO.
-      lo_statement = lo_statement->get_previous( ).
-      IF lo_statement IS INITIAL.
-        EXIT. " current loop.
-      ENDIF.
+      TRY.
+          lo_statement = lo_statement->get_previous( ).
+        CATCH zcx_flow_not_found.
+          EXIT. " current loop
+      ENDTRY.
 
-      IF lo_statement->contains_write_to( ro_uses ).
+      IF lo_statement->contains_write_to_list( ro_uses ).
         ro_uses->append_list( lo_statement->list_reads( ) ).
       ENDIF.
 
@@ -91,9 +97,36 @@ CLASS ZCL_FLOW IMPLEMENTATION.
 
 
   METHOD analyze_method.
-* todo: return object instead?
 
-* todo
+    rt_result = find_method_output( iv_include ).
+    IF lines( rt_result ) = 0.
+      RETURN.
+    ENDIF.
+
+* analyze variables one by one?
+
+    TRY.
+        DATA(lo_statement) = mo_includes->find( iv_include )->get_statements( )->get_last( ).
+      CATCH zcx_flow_not_found.
+        RETURN.
+    ENDTRY.
+
+    DO.
+      LOOP AT rt_result INTO DATA(ls_result).
+        IF lo_statement->contains_write_to( ls_result-output )
+            OR lo_statement->contains_write_to_list( ls_result-input ).
+          ls_result-input->append_list( lo_statement->list_reads( ) ).
+        ENDIF.
+
+        ls_result-input = lo_statement->remove_if_definition( ls_result-input ).
+      ENDLOOP.
+
+      TRY.
+          lo_statement = lo_statement->get_previous( ).
+        CATCH zcx_flow_not_found.
+          EXIT. " current loop
+      ENDTRY.
+    ENDDO.
 
   ENDMETHOD.
 
@@ -154,6 +187,37 @@ CLASS ZCL_FLOW IMPLEMENTATION.
   METHOD constructor.
 
     build_include_list( iv_class ).
+
+  ENDMETHOD.
+
+
+  METHOD find_method_output.
+
+    cl_oo_classname_service=>get_method_by_include(
+      EXPORTING
+        incname             = iv_include
+      RECEIVING
+        mtdkey              = DATA(ls_mtdkey)
+      EXCEPTIONS
+        class_not_existing  = 1
+        method_not_existing = 2
+        OTHERS              = 3 ).
+    ASSERT sy-subrc = 0.
+
+    SELECT sconame FROM seosubcodf
+      INTO TABLE @DATA(lt_output)
+      WHERE clsname = @ls_mtdkey-clsname
+      AND cmpname = @ls_mtdkey-cpdname
+      AND version = '1'
+      AND pardecltyp IN ('1', '2', '3').
+
+    LOOP AT lt_output INTO DATA(ls_output).
+      DATA(lv_name) = |\\TY:{ ls_mtdkey-clsname
+        }\\ME:{ ls_mtdkey-cpdname
+        }\\DA:{ ls_output-sconame }|.
+      APPEND VALUE #( output = lv_name
+                      input  = NEW #( ) ) TO rt_result.
+    ENDLOOP.
 
   ENDMETHOD.
 

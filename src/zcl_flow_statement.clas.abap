@@ -17,12 +17,19 @@ public section.
       value(RV_CONTAINS) type ABAP_BOOL .
   methods CONTAINS_WRITE_TO
     importing
+      value(IV_NAME) type STRING
+    returning
+      value(RV_CONTAINS) type ABAP_BOOL .
+  methods CONTAINS_WRITE_TO_LIST
+    importing
       value(IO_NAMES) type ref to ZCL_FLOW_NAME_LIST
     returning
       value(RV_CONTAINS) type ABAP_BOOL .
   methods GET_PREVIOUS
     returning
-      value(RO_PREVIOUS) type ref to ZCL_FLOW_STATEMENT .
+      value(RO_PREVIOUS) type ref to ZCL_FLOW_STATEMENT
+    raising
+      ZCX_FLOW_NOT_FOUND .
   methods GET_REFS
     returning
       value(RO_REFS) type ref to ZCL_FLOW_REF_LIST .
@@ -74,7 +81,7 @@ CLASS ZCL_FLOW_STATEMENT IMPLEMENTATION.
         WHEN cl_abap_compiler=>mode2_write
             OR cl_abap_compiler=>mode2_def_write
             OR cl_abap_compiler=>mode2_read_write.
-          IF io_names->contains( lo_ref->get_full_name( ) ).
+          IF iv_name = lo_ref->get_full_name( ).
             rv_contains = abap_true.
             RETURN.
           ENDIF.
@@ -84,9 +91,29 @@ CLASS ZCL_FLOW_STATEMENT IMPLEMENTATION.
   ENDMETHOD.
 
 
+  METHOD contains_write_to_list.
+
+    IF lines( io_names->mt_names ) = 0.
+      RETURN.
+    ENDIF.
+
+    LOOP AT io_names->mt_names INTO DATA(lv_name).
+      rv_contains = contains_write_to( lv_name ).
+      IF rv_contains = abap_true.
+        RETURN.
+      ENDIF.
+    ENDLOOP.
+
+  ENDMETHOD.
+
+
   METHOD get_previous.
 
     ro_previous = mo_previous.
+
+    IF ro_previous IS INITIAL.
+      RAISE EXCEPTION TYPE zcx_flow_not_found.
+    ENDIF.
 
   ENDMETHOD.
 

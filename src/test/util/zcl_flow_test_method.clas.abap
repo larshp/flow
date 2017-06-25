@@ -70,7 +70,7 @@ CLASS ZCL_FLOW_TEST_METHOD IMPLEMENTATION.
         msg = |Output { ls_expected-output } not found in result| ).
 
       cl_abap_unit_assert=>assert_equals(
-        act = lines( ls_result-input )
+        act = lines( ls_result-input->mt_names )
         exp = lines( ls_expected-input )
         msg = |Number of inputs differ for output { ls_expected-output }| ).
 
@@ -81,7 +81,7 @@ CLASS ZCL_FLOW_TEST_METHOD IMPLEMENTATION.
 
         cl_abap_unit_assert=>assert_table_contains(
           line  = lv_name
-          table = ls_result-input ).
+          table = ls_result-input->mt_names ).
       ENDLOOP.
     ENDLOOP.
 
