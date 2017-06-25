@@ -1,4 +1,4 @@
-class ZCL_FLOW_TEST_001 definition
+class ZCL_FLOW_TEST_010 definition
   public
   create public .
 
@@ -48,24 +48,24 @@ ENDCLASS.
 
 
 
-CLASS ZCL_FLOW_TEST_001 IMPLEMENTATION.
+CLASS ZCL_FLOW_TEST_010 IMPLEMENTATION.
 
 
-  METHOD test01.
+  METHOD TEST01.
 
     DATA(lo_sql) = NEW zcl_flow_test_sql( 'select * from foobar' ).
 
   ENDMETHOD.
 
 
-  METHOD test02.
+  METHOD TEST02.
 
     DATA(lo_sql) = NEW zcl_flow_test_sql( iv_where ).
 
   ENDMETHOD.
 
 
-  METHOD test03.
+  METHOD TEST03.
 
     DATA: lv_local TYPE string.
 
@@ -77,7 +77,7 @@ CLASS ZCL_FLOW_TEST_001 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD test04.
+  METHOD TEST04.
 
     DATA: lv_local TYPE string.
 
@@ -91,14 +91,14 @@ CLASS ZCL_FLOW_TEST_001 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD test05.
+  METHOD TEST05.
 
     DATA(lv_foo) = 2 + 2.
 
   ENDMETHOD.
 
 
-  METHOD test06.
+  METHOD TEST06.
 
     DATA: lv_local TYPE string.
 
@@ -112,7 +112,7 @@ CLASS ZCL_FLOW_TEST_001 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD test07.
+  METHOD TEST07.
 
     DATA: lv_local TYPE string.
 
@@ -125,7 +125,7 @@ CLASS ZCL_FLOW_TEST_001 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD test08.
+  METHOD TEST08.
 
     iv_where = |foo { iv_where }|.
 
@@ -136,7 +136,7 @@ CLASS ZCL_FLOW_TEST_001 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD test09.
+  METHOD TEST09.
 
     DATA(lv_local) = |{ iv_bar }|.
 
@@ -148,7 +148,7 @@ CLASS ZCL_FLOW_TEST_001 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD test10.
+  METHOD TEST10.
 
     DATA(lo_sql) = NEW zcl_flow_test_sql(
       'select * from foobar where ' &&
@@ -157,7 +157,7 @@ CLASS ZCL_FLOW_TEST_001 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD test11.
+  METHOD TEST11.
 
     DATA(lv_foo) = cl_oo_classname_service=>get_prosec_name( CONV #( iv_where ) ).
 
@@ -168,7 +168,7 @@ CLASS ZCL_FLOW_TEST_001 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD test12.
+  METHOD TEST12.
 
     DATA(lv_foo) = xsdbool( iv_where = 'ASDF' ).
 
@@ -179,7 +179,7 @@ CLASS ZCL_FLOW_TEST_001 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD test13.
+  METHOD TEST13.
 
     SELECT SINGLE bname INTO @DATA(lv_foo) FROM usr02 WHERE accnt = @iv_where.
 

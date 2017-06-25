@@ -2,7 +2,7 @@ CLASS ltcl_test DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLESS FINAL.
 
   PRIVATE SECTION.
     DATA:
-      mo_flow TYPE REF TO zcl_flow_test.
+      mo_flow TYPE REF TO zcl_flow_test_entry.
 
     METHODS:
       setup,
@@ -18,7 +18,7 @@ ENDCLASS.       "ltcl_Test
 CLASS ltcl_test IMPLEMENTATION.
 
   METHOD setup.
-    mo_flow = NEW zcl_flow_test( 'ZCL_FLOW_TEST_003' ).
+    mo_flow = NEW #( 'ZCL_FLOW_TEST_030' ).
   ENDMETHOD.
 
   METHOD add_expected.
@@ -26,7 +26,7 @@ CLASS ltcl_test IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD assert.
-    mo_flow->assert( mo_flow->run( iv_entry ) ).
+    mo_flow->run( iv_entry ).
   ENDMETHOD.
 
 ************************

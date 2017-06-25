@@ -1,4 +1,4 @@
-class ZCL_FLOW_TEST_003 definition
+class ZCL_FLOW_TEST_030 definition
   public
   create public .
 
@@ -51,10 +51,10 @@ ENDCLASS.
 
 
 
-CLASS ZCL_FLOW_TEST_003 IMPLEMENTATION.
+CLASS ZCL_FLOW_TEST_030 IMPLEMENTATION.
 
 
-  METHOD dead_end.
+  METHOD DEAD_END.
 
 * IV_FOO is not used
 
@@ -63,7 +63,7 @@ CLASS ZCL_FLOW_TEST_003 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD multi.
+  METHOD MULTI.
 
 * todo
     BREAK-POINT.
@@ -71,21 +71,21 @@ CLASS ZCL_FLOW_TEST_003 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD nested.
+  METHOD NESTED.
 
     rv_moo = iv_foo.
 
   ENDMETHOD.
 
 
-  METHOD sequential.
+  METHOD SEQUENTIAL.
 
     rv_moo = iv_foo && iv_bar.
 
   ENDMETHOD.
 
 
-  METHOD test01.
+  METHOD TEST01.
 
     DATA(lv_sql) = sequential( iv_foo = util( 'foo' )
                                iv_bar = util( iv_where ) ).
@@ -95,7 +95,7 @@ CLASS ZCL_FLOW_TEST_003 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD test02.
+  METHOD TEST02.
 
     DATA(lv_sql) = nested( iv_foo = util( iv_foo = util( iv_foo = iv_where ) ) ).
 
@@ -104,7 +104,7 @@ CLASS ZCL_FLOW_TEST_003 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD test03.
+  METHOD TEST03.
 
     DATA(lv_sql) = sequential( iv_foo = util( 'foo' )
                                iv_bar = sequential( iv_foo = iv_where
@@ -115,7 +115,7 @@ CLASS ZCL_FLOW_TEST_003 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD test04.
+  METHOD TEST04.
 
     DATA(lv_sql) = dead_end( iv_where ).
 
@@ -124,7 +124,7 @@ CLASS ZCL_FLOW_TEST_003 IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD util.
+  METHOD UTIL.
 
     rv_bar = iv_foo.
 

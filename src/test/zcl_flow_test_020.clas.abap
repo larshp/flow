@@ -1,4 +1,4 @@
-class ZCL_FLOW_TEST_002 definition
+class ZCL_FLOW_TEST_020 definition
   public
   create public .
 
@@ -22,24 +22,24 @@ ENDCLASS.
 
 
 
-CLASS ZCL_FLOW_TEST_002 IMPLEMENTATION.
+CLASS ZCL_FLOW_TEST_020 IMPLEMENTATION.
 
 
-  METHOD build_sql.
+  METHOD BUILD_SQL.
 
     rv_sql = iv_filter.
 
   ENDMETHOD.
 
 
-  METHOD execute_sql.
+  METHOD EXECUTE_SQL.
 
     NEW zcl_flow_test_sql( iv_sql ).
 
   ENDMETHOD.
 
 
-  METHOD test01.
+  METHOD TEST01.
 
     DATA(lv_sql) = build_sql( iv_filter ).
 

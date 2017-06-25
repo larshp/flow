@@ -10,12 +10,12 @@ CLASS ltcl_test IMPLEMENTATION.
 
   METHOD test01.
 
-    DATA(lo_flow) = NEW zcl_flow_test( 'ZCL_FLOW_TEST_002' ).
+    DATA(lo_flow) = NEW zcl_flow_test_entry( 'ZCL_FLOW_TEST_020' ).
 
     lo_flow->add_expected( iv_variable = 'IV_WHERE'
                            iv_method   = 'TEST01' ).
 
-    lo_flow->assert( lo_flow->run( 'EXECUTE_SQL' ) ).
+    lo_flow->run( 'EXECUTE_SQL' ).
 
   ENDMETHOD.
 

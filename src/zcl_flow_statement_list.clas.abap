@@ -19,6 +19,9 @@ public section.
       value(RO_STATEMENT) type ref to ZCL_FLOW_STATEMENT
     raising
       ZCX_FLOW_NOT_FOUND .
+  methods GET_LAST
+    returning
+      value(RO_STATEMENT) type ref to ZCL_FLOW_STATEMENT .
   PROTECTED SECTION.
 private section.
 ENDCLASS.
@@ -62,6 +65,13 @@ CLASS ZCL_FLOW_STATEMENT_LIST IMPLEMENTATION.
         io_previous  = lo_previous.
 
     APPEND ro_statement TO mt_statements.
+
+  ENDMETHOD.
+
+
+  METHOD get_last.
+
+    ro_statement = mt_statements[ lines( mt_statements ) ].
 
   ENDMETHOD.
 ENDCLASS.

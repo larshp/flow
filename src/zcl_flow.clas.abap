@@ -4,10 +4,15 @@ class ZCL_FLOW definition
 
 public section.
 
-  methods BUILD_OUTPUT
-    returning
-      value(RT_STRING) type STRING_TABLE .
-  methods FOOBAR
+  types:
+    BEGIN OF ty_method_result,
+        output TYPE string,
+        input  TYPE string_table,
+      END OF ty_method_result .
+  types:
+    ty_method_result_tt TYPE STANDARD TABLE OF ty_method_result WITH DEFAULT KEY .
+
+  methods ANALYZE_ENTRY
     importing
       !IV_INCLUDE type PROGRAMM
       !IV_METHOD type STRING
@@ -15,6 +20,15 @@ public section.
       value(RO_USES) type ref to ZCL_FLOW_NAME_LIST
     raising
       ZCX_FLOW .
+  methods ANALYZE_METHOD
+    importing
+      !IV_INCLUDE type PROGRAMM
+    returning
+      value(RT_RESULT) type TY_METHOD_RESULT_TT .
+  methods ANALYZE_DEEP .
+  methods BUILD_OUTPUT
+    returning
+      value(RT_STRING) type STRING_TABLE .
   methods CONSTRUCTOR
     importing
       !IV_CLASS type SEOCLSNAME .
@@ -22,21 +36,66 @@ protected section.
 
   data MO_INCLUDES type ref to ZCL_FLOW_INCLUDE_LIST .
 
+  methods BUILD_INCLUDE_LIST
+    importing
+      !IV_CLASS type SEOCLSNAME .
+  methods FIND_METHOD_USE .
   methods RUN_COMPILER
     importing
       !IV_CLASS type SEOCLSNAME
     returning
       value(RT_RESULT) type SCR_REFS .
-  methods FIND_METHOD_USE .
-  methods BUILD_INCLUDE_LIST
-    importing
-      !IV_CLASS type SEOCLSNAME .
 private section.
 ENDCLASS.
 
 
 
 CLASS ZCL_FLOW IMPLEMENTATION.
+
+
+  METHOD analyze_deep.
+
+* todo
+
+  ENDMETHOD.
+
+
+  METHOD analyze_entry.
+* find inputs used for IV_METHOD in IV_INCLUDE
+
+    TRY.
+        DATA(lo_statement) = mo_includes->find( iv_include
+          )->get_statements(
+          )->find_method_use( iv_method ).
+      CATCH zcx_flow_not_found.
+        CREATE OBJECT ro_uses.
+        RETURN.
+    ENDTRY.
+
+    ro_uses = lo_statement->list_reads( ).
+
+    DO.
+      lo_statement = lo_statement->get_previous( ).
+      IF lo_statement IS INITIAL.
+        EXIT. " current loop.
+      ENDIF.
+
+      IF lo_statement->contains_write_to( ro_uses ).
+        ro_uses->append_list( lo_statement->list_reads( ) ).
+      ENDIF.
+
+      ro_uses = lo_statement->remove_if_definition( ro_uses ).
+    ENDDO.
+
+  ENDMETHOD.
+
+
+  METHOD analyze_method.
+* todo: return object instead?
+
+* todo
+
+  ENDMETHOD.
 
 
   METHOD build_include_list.
@@ -116,38 +175,6 @@ CLASS ZCL_FLOW IMPLEMENTATION.
 *    ENDLOOP.
 *
 *    RAISE EXCEPTION TYPE zcx_flow_not_found.
-
-  ENDMETHOD.
-
-
-  METHOD foobar.
-* find uses/inputs used for calling IV_METHOD
-
-    TRY.
-        DATA(lo_statement) = mo_includes->find( iv_include
-          )->get_statements(
-          )->find_method_use( iv_method ).
-      CATCH zcx_flow_not_found.
-        CREATE OBJECT ro_uses.
-        RETURN.
-    ENDTRY.
-
-    ro_uses = lo_statement->list_reads( ).
-
-    DO.
-      lo_statement = lo_statement->get_previous( ).
-      IF lo_statement IS INITIAL.
-        EXIT. " current loop.
-      ENDIF.
-
-      IF lo_statement->contains_write_to( ro_uses ).
-        ro_uses->append_list( lo_statement->list_reads( ) ).
-      ENDIF.
-
-      ro_uses = lo_statement->remove_if_definition( ro_uses ).
-
-* todo
-    ENDDO.
 
   ENDMETHOD.
 

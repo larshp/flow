@@ -1,4 +1,4 @@
-class ZCL_FLOW_TEST definition
+class ZCL_FLOW_TEST_ENTRY definition
   public
   create public
   for testing .
@@ -15,34 +15,34 @@ public section.
   methods RUN
     importing
       !IV_ENTRY type STRING
-    returning
-      value(RO_USES) type ref to ZCL_FLOW_NAME_LIST
     raising
       ZCX_FLOW .
+protected section.
+
+  types:
+    BEGIN OF ty_expected,
+           method   TYPE string,
+           variable TYPE string,
+         END OF ty_expected .
+
+  data MV_ENTRY type STRING .
+  data MO_FLOW type ref to ZCL_FLOW .
+  data MV_CLASS type SEOCLSNAME .
+  data:
+    mt_expected TYPE STANDARD TABLE OF ty_expected WITH DEFAULT KEY .
+
   methods ASSERT
     importing
       !IO_USES type ref to ZCL_FLOW_NAME_LIST .
-PROTECTED SECTION.
-
-  DATA mv_entry TYPE string.
-  DATA mo_flow TYPE REF TO zcl_flow.
-  DATA mv_class TYPE seoclsname.
-
-  TYPES: BEGIN OF ty_expected,
-           method   TYPE string,
-           variable TYPE string,
-         END OF ty_expected.
-
-  DATA mt_expected TYPE STANDARD TABLE OF ty_expected WITH DEFAULT KEY.
 private section.
 ENDCLASS.
 
 
 
-CLASS ZCL_FLOW_TEST IMPLEMENTATION.
+CLASS ZCL_FLOW_TEST_ENTRY IMPLEMENTATION.
 
 
-  METHOD add_expected.
+  METHOD ADD_EXPECTED.
 
     APPEND INITIAL LINE TO mt_expected ASSIGNING FIELD-SYMBOL(<ls_exp>).
     <ls_exp>-method = iv_method.
@@ -51,7 +51,7 @@ CLASS ZCL_FLOW_TEST IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD assert.
+  METHOD ASSERT.
 
     cl_abap_unit_assert=>assert_equals(
       act = lines( io_uses->mt_names )
@@ -84,7 +84,7 @@ CLASS ZCL_FLOW_TEST IMPLEMENTATION.
   ENDMETHOD.
 
 
-  METHOD constructor.
+  METHOD CONSTRUCTOR.
 
     mo_flow  = NEW zcl_flow( iv_class ).
     mv_class = iv_class.
@@ -100,9 +100,11 @@ CLASS ZCL_FLOW_TEST IMPLEMENTATION.
       clsname = mv_class
       cpdname = iv_entry ) ).
 
-    ro_uses = mo_flow->foobar(
+    DATA(lo_uses) = mo_flow->analyze_entry(
       iv_include = lv_include
       iv_method  = '\TY:ZCL_FLOW_TEST_SQL' ).
+
+    assert( lo_uses ).
 
   ENDMETHOD.
 ENDCLASS.
