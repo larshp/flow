@@ -25,7 +25,8 @@ CLASS ltcl_test DEFINITION FOR TESTING DURATION SHORT RISK LEVEL HARMLESS FINAL.
       test10 FOR TESTING RAISING zcx_flow,
       test11 FOR TESTING RAISING zcx_flow,
       test12 FOR TESTING RAISING zcx_flow,
-      test13 FOR TESTING RAISING zcx_flow.
+      test13 FOR TESTING RAISING zcx_flow,
+      test14 FOR TESTING RAISING zcx_flow.
 
 ENDCLASS.
 
@@ -124,6 +125,12 @@ CLASS ltcl_test IMPLEMENTATION.
     add_expected( iv_output = 'RV_OUT'
                   it_input  = VALUE #( ( |IV_IN| ) ) ).
     assert( 'TEST13' ).
+  ENDMETHOD.
+
+  METHOD test14.
+    add_expected( iv_output = 'RV_OUT'
+                  it_input  = VALUE #( ( |IV_IN| ) ) ).
+    assert( 'TEST14' ).
   ENDMETHOD.
 
 ENDCLASS.

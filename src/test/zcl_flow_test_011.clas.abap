@@ -64,6 +64,11 @@ public section.
       !IV_IN type STRING
     returning
       value(RV_OUT) type STRING .
+  methods TEST14
+    importing
+      !IV_IN type STRING
+    returning
+      value(RV_OUT) type STRING .
 protected section.
 private section.
 ENDCLASS.
@@ -170,6 +175,13 @@ CLASS ZCL_FLOW_TEST_011 IMPLEMENTATION.
     DATA(lv_local) = iv_in && 'bar'.
 
     rv_out = 'sdf' && lv_local.
+
+  ENDMETHOD.
+
+
+  METHOD test14.
+
+    rv_out = 'sdf' && iv_in && iv_in.
 
   ENDMETHOD.
 ENDCLASS.
